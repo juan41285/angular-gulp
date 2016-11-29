@@ -14,9 +14,9 @@
 ****
 
 ```
-#### PASO 1
+PASO 1
 
-- Estructura de Directorios: Como los componentes son indenpendientes de la aplicacion se agrupa en una carpeta todos los elementos que necesita el componente para funcionar.
+- Estructura de Directorios: Como los componentes son indenpendientes de la aplicacion se agrupa  en una carpeta todos los elementos que necesita el componente para funcionar.
 
 components
  ---searchBar
@@ -25,4 +25,65 @@ components
  	--searchBar.css
 
 
+- Nombre de los componentes: Los componentes deben ser nombrados utilizando camelCase
+
+```
+
+```
+PASO 2
+
+- Adaptar Gulpfile para que procese los componentes.
+
+
+```
+```javascript
+// Busca errores en el JS y nos los muestra por pantalla
+gulp.task('jshint', function() {
+  return gulp.src('./app/scripts/**/*.js','./app/components/**/*.js')
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'));
+});
+
+// Preprocesa archivos Stylus a CSS y recarga los cambios
+gulp.task('css', function() {
+  gulp.src('./app/css/**/*.css','./app/components/**/*.css')
+    .pipe(connect.reload());
+});
+
+// Recarga el navegador cuando hay cambios en el HTML
+gulp.task('html', function() {
+  gulp.src('./app/**/*.html','./app/components/**/*.html')
+    .pipe(connect.reload());
+});
+
+// Busca en las carpetas de estilos y javascript los archivos
+// para inyectarlos en el index.html
+gulp.task('inject', function() {
+  return gulp.src('index.html', {cwd: './app'})
+    .pipe(inject(
+      gulp.src(['./app/scripts/**/*.js','./app/components/**/*.js']).pipe(angularFilesort()), {
+      read: false,
+      ignorePath: '/app'
+    }))
+    .pipe(inject(
+      gulp.src(['./app/css/**/*.css','./src/components/**/*.css']), {
+        read: false,
+        ignorePath: '/app'
+      }
+    ))
+    .pipe(gulp.dest('./app'));
+});
+
+gulp.task('templates2', function() {
+  gulp.src(['./app/components/**/*.tpl.html'])
+    .pipe(templateCache({
+      root: 'components/',
+      module: 'app.templates2',
+      standalone: true
+    }))
+    .pipe(gulp.dest('./app/components'));
+});
+
+gulp.task('default', ['server', 'templates', 'templates2', 'inject', 'wiredep', 'watch','jshint','css']);
 ```

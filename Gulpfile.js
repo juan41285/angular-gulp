@@ -42,7 +42,7 @@ gulp.task('server-dist', function() {
 
 // Busca errores en el JS y nos los muestra por pantalla
 gulp.task('jshint', function() {
-  return gulp.src('./app/scripts/**/*.js')
+  return gulp.src('./app/scripts/**/*.js','./app/components/**/*.js')
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
@@ -50,14 +50,13 @@ gulp.task('jshint', function() {
 
 // Preprocesa archivos Stylus a CSS y recarga los cambios
 gulp.task('css', function() {
-  gulp.src('./app/css/**/*.css')
-    .pipe(gulp.dest('./app/css'))
+  gulp.src('./app/css/**/*.css','./app/components/**/*.css')
     .pipe(connect.reload());
 });
 
 // Recarga el navegador cuando hay cambios en el HTML
 gulp.task('html', function() {
-  gulp.src('./app/**/*.html')
+  gulp.src('./app/**/*.html','./app/components/**/*.html')
     .pipe(connect.reload());
 });
 
@@ -81,12 +80,12 @@ gulp.task('copy', function() {
 gulp.task('inject', function() {
   return gulp.src('index.html', {cwd: './app'})
     .pipe(inject(
-      gulp.src(['./app/scripts/**/*.js']).pipe(angularFilesort()), {
+      gulp.src(['./app/scripts/**/*.js','./app/components/**/*.js']).pipe(angularFilesort()), {
       read: false,
       ignorePath: '/app'
     }))
     .pipe(inject(
-      gulp.src(['./app/css/**/*.css']), {
+      gulp.src(['./app/css/**/*.css','./src/components/**/*.css']), {
         read: false,
         ignorePath: '/app'
       }
@@ -115,6 +114,15 @@ gulp.task('templates', function() {
     .pipe(gulp.dest('./app/scripts'));
 });
 
+gulp.task('templates2', function() {
+  gulp.src(['./app/components/**/*.tpl.html'])
+    .pipe(templateCache({
+      root: 'components/',
+      module: 'app.templates2',
+      standalone: true
+    }))
+    .pipe(gulp.dest('./app/components'));
+});
 // Comprime los archivos CSS y JS enlazados en el index.html
 // y los minifica.
 gulp.task('compress', function() {
@@ -136,10 +144,10 @@ gulp.task('imagenes', function () {
 // Vigila cambios que se produzcan en el código
 // y lanza las tareas relacionadas
 gulp.task('watch', function() {
-  gulp.watch(['./app/**/*.html', '/app/**/!index.html'], ['html']);
+  gulp.watch(['./app/**/*.html', '/app/**/!index.html'], ['html','templates','templates2']);
   gulp.watch(['./app/scripts/**/*.js', './Gulpfile.js'], ['inject']);
   gulp.watch(['./bower.json'], ['wiredep']);
 });
 
-gulp.task('default', ['server', 'templates', 'inject', 'wiredep', 'watch','jshint','css']);
+gulp.task('default', ['server', 'templates', 'templates2', 'inject', 'wiredep', 'watch','jshint','css']);
 gulp.task('build', ['templates', 'compress', 'copy', 'inject','imagenes']);
