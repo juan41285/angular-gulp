@@ -1,56 +1,28 @@
-# Base gulp angularjs 
+# Componentes en Angularjs 1.5
 
-Configuración basica de gulp para iniciar proyecto utilizando Angularjs
+- Metodología para crear componentes con angular 1.5 en estructura de desarrollo basada en gulp
 
-## Dependencias
-- Angular.js
-- Angular-Route
-- Angular-Resource
-- Bootstrap
-- Bootstrap Material
-
-## Instalación
-### Software adicional para Windows
+### Fuentes Consultadas
+* [google](https://www.google.com.ar)
+* [https://docs.angularjs.org/guide/component](https://docs.angularjs.org/guide/component)
+* [https://carlosazaustre.es/blog/angular-js-directivas-como-componentes/](https://carlosazaustre.es/blog/angular-js-directivas-como-componentes/)
+* [https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md](https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md)
+* [http://www.desarrolloweb.com/articulos/componentes-angularjs-15.html](http://www.desarrolloweb.com/articulos/componentes-angularjs-15.html)
+* [http://teropa.info/blog/2015/10/18/refactoring-angular-apps-to-components.html](http://teropa.info/blog/2015/10/18/refactoring-angular-apps-to-components.html)
 
 
-- [instalar node y npm ](https://nodejs.org/en/)
-> verificar instalación correctar escribiendo node -v en consola.
-> Si no inicia el command line agregar en variables de entorno PAHT la carpeta bin de la instalación de node 
-
-- [Instalar Git (necesario para instalar dependencias)](https://git-scm.com/download/win)
+****
 
 ```
-> Luego de instalar git crear un directorio e inicializar git en dicho directorio
+#### PASO 1
+
+- Estructura de Directorios: Como los componentes son indenpendientes de la aplicacion se agrupa en una carpeta todos los elementos que necesita el componente para funcionar.
+
+components
+ ---searchBar
+ 	--searchBar.js
+ 	--searchBar.tpl.html
+ 	--searchBar.css
 
 
-//ejemplo
-C:\mkdir proyecto
-C:\cd proyecto
-C:\git init
-C:\git clone https://github.com/juan41285/angular-gulp.git
 ```
-### Instalar global
-```
-$ npm install -g stylus
-$ npm install -g gulp
-$ npm install -g bower
-```
-
-### Ejecutar desde la carpeta del proyecto
-```
-$ npm install
-$ bower install
-```
-### Iniciar servidor en fase de desarrollo
-```
-$ gulp
-```
-### Compilar app
-```
-$ gulp build
-$ gulp server-dist
-```
-
-## License
-
-**The MIT License (MIT)**

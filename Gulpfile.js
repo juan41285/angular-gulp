@@ -1,18 +1,23 @@
-// File: Gulpfile.js
 'use strict';
 
 var gulp      = require('gulp'),
+    imagemin = require('gulp-imagemin'),
     connect   = require('gulp-connect'),
+    stylus    = require('gulp-stylus'),
     nib       = require('nib'),
     jshint    = require('gulp-jshint'),
     stylish   = require('jshint-stylish'),
     inject    = require('gulp-inject'),
     wiredep   = require('wiredep').stream,
     gulpif    = require('gulp-if'),
+    minifyCss = require('gulp-minify-css'),
     useref    = require('gulp-useref'),
+    uglify    = require('gulp-uglify'),
+    uncss     = require('gulp-uncss'),
     angularFilesort = require('gulp-angular-filesort'),
+    templateCache = require('gulp-angular-templatecache'),
     historyApiFallback = require('connect-history-api-fallback');
-   
+
 // Servidor web de desarrollo
 gulp.task('server', function() {
   connect.server({
@@ -20,9 +25,7 @@ gulp.task('server', function() {
     hostname: '0.0.0.0',
     port: 8080,
     livereload: true,
-    middleware: function(connect, opt) {
-      return [ historyApiFallback ];
-    }
+   //middleware: function (connect, opt) { return [ historyApiFallback({}) ]; }
   });
 });
 
@@ -31,11 +34,9 @@ gulp.task('server-dist', function() {
   connect.server({
     root: './dist',
     hostname: '0.0.0.0',
-    port: 8181,
+    port: 666,
     livereload: true,
-    middleware: function(connect, opt) {
-      return [ historyApiFallback ];
-    }
+   middleware: function (connect, opt) { return [ historyApiFallback({}) ]; }
   });
 });
 
@@ -47,6 +48,12 @@ gulp.task('jshint', function() {
     .pipe(jshint.reporter('fail'));
 });
 
+// Preprocesa archivos Stylus a CSS y recarga los cambios
+gulp.task('css', function() {
+  gulp.src('./app/css/**/*.css')
+    .pipe(gulp.dest('./app/css'))
+    .pipe(connect.reload());
+});
 
 // Recarga el navegador cuando hay cambios en el HTML
 gulp.task('html', function() {
@@ -58,7 +65,14 @@ gulp.task('html', function() {
 // de producción sin tags de comentarios
 gulp.task('copy', function() {
   gulp.src('./app/index.html')
-    .pipe(useref()) 
+    .pipe(useref())
+    .pipe(gulp.dest('./dist'));
+  gulp.src('./app/templates/**/*.tpl.html')
+    .pipe(gulp.dest('./dist/templates'));
+   gulp.src('./app/lib/bootstrap/fonts/**')
+    .pipe(gulp.dest('./dist/fonts'));
+
+
 });
 
 
@@ -72,7 +86,7 @@ gulp.task('inject', function() {
       ignorePath: '/app'
     }))
     .pipe(inject(
-      gulp.src(['./app/stylesheets/**/*.css']), {
+      gulp.src(['./app/css/**/*.css']), {
         read: false,
         ignorePath: '/app'
       }
@@ -89,15 +103,43 @@ gulp.task('wiredep', function () {
     .pipe(gulp.dest('./app'));
 });
 
+// Compila las plantillas HTML parciales a JavaScript
+// para ser inyectadas por AngularJS y minificar el código
+gulp.task('templates', function() {
+  gulp.src('./app/templates/**/*.tpl.html')
+    .pipe(templateCache({
+      root: 'templates/',
+      module: 'app.templates',
+      standalone: true
+    }))
+    .pipe(gulp.dest('./app/scripts'));
+});
 
+// Comprime los archivos CSS y JS enlazados en el index.html
+// y los minifica.
+gulp.task('compress', function() {
+  gulp.src('./app/index.html')
+    .pipe(useref.assets())
+    .pipe(gulpif('*.js', uglify({mangle: false })))
+    .pipe(gulpif('*.css', minifyCss()))
+    .pipe(gulp.dest('./dist'));
+});
+
+
+
+gulp.task('imagenes', function () {
+    return gulp.src(['./app/img/*.*'])
+        .pipe(imagemin())
+        .pipe(gulp.dest('./dist/img/'));
+});
 
 // Vigila cambios que se produzcan en el código
 // y lanza las tareas relacionadas
 gulp.task('watch', function() {
-  gulp.watch(['./app/**/*.html'], ['html']);
+  gulp.watch(['./app/**/*.html', '/app/**/!index.html'], ['html']);
   gulp.watch(['./app/scripts/**/*.js', './Gulpfile.js'], ['inject']);
   gulp.watch(['./bower.json'], ['wiredep']);
 });
 
-gulp.task('default', ['server', 'inject', 'wiredep', 'watch','jshint']);
-gulp.task('build', ['copy', 'inject']);
+gulp.task('default', ['server', 'templates', 'inject', 'wiredep', 'watch','jshint','css']);
+gulp.task('build', ['templates', 'compress', 'copy', 'inject','imagenes']);
